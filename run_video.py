@@ -44,8 +44,7 @@ if __name__ == '__main__':
         ret_val, image = cap.read()
 
         humans = e.inference(image, resize_to_default=(w > 0 and h > 0), upsample_size=4.0)
-        if not args.showBG:
-            image = np.zeros(image.shape)
+        image = np.zeros(image.shape)
         image = TfPoseEstimator.draw_humans(image, humans, imgcopy=False)
 
         cv2.putText(image, "FPS: %f" % (1.0 / (time.time() - fps_time)), (10, 10),  cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
