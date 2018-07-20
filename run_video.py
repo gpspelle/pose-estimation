@@ -40,18 +40,24 @@ if __name__ == '__main__':
     if cap.isOpened() is False:
         print("Error opening video stream or file")
     
+    i = 0
     while cap.isOpened():
+        i+=1
         ret_val, image = cap.read()
+
+        if ret_vall == False:
+            break
 
         humans = e.inference(image, resize_to_default=(w > 0 and h > 0), upsample_size=4.0)
         image = np.zeros(image.shape)
         image = TfPoseEstimator.draw_humans(image, humans, imgcopy=False)
 
-        cv2.putText(image, "FPS: %f" % (1.0 / (time.time() - fps_time)), (10, 10),  cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-        cv2.imshow('tf-pose-estimation result', image)
-        fps_time = time.time()
-        if cv2.waitKey(1) == 27:
-            break
+        cv2.imwrite('frame_' + str(i).zfill(5) + '.jpg', image)
+        #cv2.putText(image, "FPS: %f" % (1.0 / (time.time() - fps_time)), (10, 10),  cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+        #cv2.imshow('tf-pose-estimation result', image)
+        #fps_time = time.time()
+        #if cv2.waitKey(1) == 27:
+        #    break
 
     cv2.destroyAllWindows()
 logger.debug('finished+')
