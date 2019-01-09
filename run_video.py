@@ -21,6 +21,7 @@ fps_time = 0
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='tf-pose-estimation Video')
+    parser.add_argument('--path', type=str, default='')
     parser.add_argument('--video', type=str, default='')
     parser.add_argument('--resolution', type=str, default='0x0', help='network input resolution. default=432x368')
     parser.add_argument('--model', type=str, default='mobilenet_thin', help='cmu / mobilenet_thin')
@@ -40,24 +41,27 @@ if __name__ == '__main__':
     if cap.isOpened() is False:
         print("Error opening video stream or file")
     
+    print(args.path)
     i = 0
     while cap.isOpened():
-        i+=1
         ret_val, image = cap.read()
 
-        if ret_vall == False:
+        if ret_val == False:
             break
+        
+        i+=1
+        cv2.imwrite(args.path + 'frame_' + str(i).zfill(5) + '.jpg', image)
 
         humans = e.inference(image, resize_to_default=(w > 0 and h > 0), upsample_size=4.0)
         image = np.zeros(image.shape)
         image = TfPoseEstimator.draw_humans(image, humans, imgcopy=False)
 
-        cv2.imwrite('frame_' + str(i).zfill(5) + '.jpg', image)
+        cv2.imwrite(args.path + 'pose_' + str(i).zfill(5) + '.jpg', image)
         #cv2.putText(image, "FPS: %f" % (1.0 / (time.time() - fps_time)), (10, 10),  cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
         #cv2.imshow('tf-pose-estimation result', image)
         #fps_time = time.time()
         #if cv2.waitKey(1) == 27:
         #    break
 
-    cv2.destroyAllWindows()
+    #cv2.destroyAllWindows()
 logger.debug('finished+')
