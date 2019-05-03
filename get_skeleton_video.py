@@ -33,30 +33,36 @@ if __name__ == '__main__':
         argp.print_help(sys.stderr)
         exit(1)
 
-    logger.debug('initialization %s : %s' % (args.model, get_graph_path(args.model)))
+    logger.debug('initialization %s : %s' % (args.model[0], get_graph_path(args.model[0])))
     w, h = model_wh(args.resolution)
     if w > 0 and h > 0:
-        e = TfPoseEstimator(get_graph_path(args.model), target_size=(w, h))
+        e = TfPoseEstimator(get_graph_path(args.model[0]), target_size=(w, h))
     else:
-        e = TfPoseEstimator(get_graph_path(args.model), target_size=(224, 224))
-    cap = cv2.VideoCapture(args.video)
+        e = TfPoseEstimator(get_graph_path(args.model[0]), target_size=(224, 224))
+    cap = cv2.VideoCapture(args.video[0])
 
     if cap.isOpened() is False:
         print("Error opening video stream or file")
     
+    print(args.path)
     i = 0
     while cap.isOpened():
-        i+=1
         ret_val, image = cap.read()
 
         if ret_val == False:
             break
+        
+        i+=1
 
         humans = e.inference(image, resize_to_default=(w > 0 and h > 0), upsample_size=4.0)
-        image = np.zeros(image.shape)
+        if not args.showBG[0]:
+            image = np.zeros(image.shape)
+
         image = TfPoseEstimator.draw_humans(image, humans, imgcopy=False)
 
-        cv2.imwrite(video + '/pose_' + str(i).zfill(5) + '.jpg', image)
+        last = args.video[0].rfind('/')
+
+        cv2.imwrite(args.video[0][:last] + '/pose_' + str(i).zfill(5) + '.jpg', image)
 
     cv2.destroyAllWindows()
 logger.debug('finished+')
