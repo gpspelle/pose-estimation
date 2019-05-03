@@ -18,23 +18,27 @@ logger.addHandler(ch)
 
 fps_time = 0
 
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='tf-pose-estimation Video')
-    parser.add_argument('--video', type=str, default='')
-    parser.add_argument('--resolution', type=str, default='0x0', help='network input resolution. default=432x368')
-    parser.add_argument('--model', type=str, default='mobilenet_thin', help='cmu / mobilenet_thin')
-    parser.add_argument('--show-process', type=bool, default=False,
+    parser.add_argument('-video', type=str, default='', required=True)
+    parser.add_argument('-resolution', type=str, default='0x0', help='network input resolution. default=224x224', required=False)
+    parser.add_argument('-model', type=str, default='cmu', help='cmu / mobilenet_thin', required=False)
+    parser.add_argument('-show-process', type=bool, default=False,
                         help='for debug purpose, if enabled, speed for inference is dropped.')
-    parser.add_argument('--showBG', type=bool, default=True, help='False to show skeleton only.')
-    args = parser.parse_args()
+    parser.add_argument('-showBG', type=bool, default=False, help='False to show skeleton only.', required=False)
+
+    try:
+        args = argp.parse_args()
+    except:
+        argp.print_help(sys.stderr)
+        exit(1)
 
     logger.debug('initialization %s : %s' % (args.model, get_graph_path(args.model)))
     w, h = model_wh(args.resolution)
     if w > 0 and h > 0:
         e = TfPoseEstimator(get_graph_path(args.model), target_size=(w, h))
     else:
-        e = TfPoseEstimator(get_graph_path(args.model), target_size=(432, 368))
+        e = TfPoseEstimator(get_graph_path(args.model), target_size=(224, 224))
     cap = cv2.VideoCapture(args.video)
 
     if cap.isOpened() is False:
@@ -45,19 +49,14 @@ if __name__ == '__main__':
         i+=1
         ret_val, image = cap.read()
 
-        if ret_vall == False:
+        if ret_val == False:
             break
 
         humans = e.inference(image, resize_to_default=(w > 0 and h > 0), upsample_size=4.0)
         image = np.zeros(image.shape)
         image = TfPoseEstimator.draw_humans(image, humans, imgcopy=False)
 
-        cv2.imwrite('frame_' + str(i).zfill(5) + '.jpg', image)
-        #cv2.putText(image, "FPS: %f" % (1.0 / (time.time() - fps_time)), (10, 10),  cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-        #cv2.imshow('tf-pose-estimation result', image)
-        #fps_time = time.time()
-        #if cv2.waitKey(1) == 27:
-        #    break
+        cv2.imwrite(video + '/pose_' + str(i).zfill(5) + '.jpg', image)
 
     cv2.destroyAllWindows()
 logger.debug('finished+')
